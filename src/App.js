@@ -47,7 +47,7 @@ class PlaylistCounter extends Component {
       <div style={{...defaultStyle, width: '40%', display: 'inline-block'}}>
         <h2>{this.props.playlists.length} playlists</h2>
       </div>
-    );
+    )
   }
 }
 
@@ -74,23 +74,24 @@ class Filter extends Component {
         <input type="text"/>
         Filter
       </div>
-    );
+    )
   }
 }
 
 class Playlist extends Component {
   render() {
+    let playlist = this.props.playlist;
     return (
       <div style={{...defaultStyle, display: 'inline-block', width: "25%"}}>
         <img />
-        <h3>{this.props.playlist.name}</h3>
+        <h3>{playlist.name}</h3>
         <ul>
-          {this.props.playlist.songs.map(song =>
+          {playlist.songs.map(song =>
             <li>{song.name}</li>
           )}
         </ul>
       </div>
-    );
+    )
   }
 }
 
@@ -121,8 +122,8 @@ class App extends Component {
           </div> : ' Loading...'
         }
       </div> 
-    );
+    )
   }
 }
 
-export default App;
+export default App
