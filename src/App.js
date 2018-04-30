@@ -6,41 +6,6 @@ let defaultStyle = {
   color: '#333333'
 };
 
-let fakeServerData = {
-  user: {
-    name: "Cédric",
-    playlists: [
-      {
-        name: 'My favorites',
-        songs: [
-          {name: 'Song A', duration: 1547}, 
-          {name: 'Song B', duration: 1247}, 
-          {name: 'Song C', duration: 1003}]
-      },
-      {
-        name: 'Songs to discover!',
-        songs: [
-          {name: 'Song E', duration: 2014}, 
-          {name: 'Song F', duration: 1874}, 
-          {name: 'Song G', duration: 1600}]
-      },
-      {
-        name: 'Most downloaded',
-        songs: [
-          {name: 'Song I', duration: 1347}, 
-          {name: 'Song J', duration: 1257}, 
-          {name: 'Song K', duration: 1798}]
-      },
-      {
-        name: 'Worst songs ever',
-        songs: [
-          {name: 'Song M', duration: 980}, 
-          {name: 'Song N', duration: 640}, 
-          {name: 'Song O', duration: 3400}]
-      },
-    ]
-  }
-}
 
 class PlaylistCounter extends Component {
   render() {
@@ -80,14 +45,18 @@ class Filter extends Component {
 }
 
 class Playlist extends Component {
+  constructor() {
+    super()
+    //console.log(this.props.playlist.name)
+  }
+  
   render() {
-    let playlist = this.props.playlist;
     return (
       <div style={{...defaultStyle, display: 'inline-block', width: "25%"}}>
         <img />
-        <h3>{playlist.name}</h3>
+        <h3>{this.props.playlist.name}</h3>
         <ul>
-          {playlist.songs.map(song =>
+          {this.props.playlist.songs.map(song =>
             <li>{song.name}</li>
           )}
         </ul>
@@ -97,42 +66,70 @@ class Playlist extends Component {
 }
 
 class App extends Component {
+
   constructor() {
     super();
     this.state = {serverData: {}}
   }
+
   componentDidMount() {
-    
-    setTimeout(() => {
-      this.setState({serverData: fakeServerData})
-    }, 250);
-    
+
     let parsed = queryString.parse(window.location.search)
     let accessToken = parsed.access_token
+
+    // Fetch username : simple merge on the first level
     fetch('https://api.spotify.com/v1/me', {
       headers: {'Authorization': 'Bearer '+accessToken}
     }).then(response => response.json()
-    ).then(data => console.log(data))
+    ).then(data => this.setState({
+      user: {
+        name: data.display_name
+      }
+    }))
+
+    // Fetch playlists : deep merge using Object.assing()
+    fetch('https://api.spotify.com/v1/me/playlists', {
+      headers: {'Authorization': 'Bearer '+accessToken}
+    }).then(response => response.json()
+    ).then(data => this.setState({
+      playlists: data.items.map(item => ({
+        name: item.name,
+        songs: []
+      }))
+    }))
+
+    //console.dir(this.state);
+
   }
-  render() {
+
+  render() { // console.dir(this.state.playlists)
+
+    let playlistToRender =
+      this.state.user &&
+      this.state.playlists
+        ? this.state.playlists
+        : []
+
     return (
       <div className="App">
-        {this.state.serverData.user ?
-          <div>
-            <h1 style={{...defaultStyle, fontSize: '54px'}}>
-              {this.state.serverData.user.name}'s Playlist
-            </h1>
-            <PlaylistCounter playlists={this.state.serverData.user.playlists}/>
-            <HoursCounter playlists={this.state.serverData.user.playlists}/>
-            <Filter/>
-            {this.state.serverData.user.playlists.map(playlist =>
-              <Playlist playlist={playlist} />
-            )}
-          </div> : <button onClick={()=>window.location='http://localhost:8888/login'} style={{padding: '20px', fontSize: '50px', marginTop: '20px'}}>Sign in with Spotify</button>
+        {this.state.user
+          ? <div>
+              <h1 style={{...defaultStyle, fontSize: '54px'}}>
+                {this.state.user.name}'s Playlist
+              </h1>
+              <PlaylistCounter playlists={playlistToRender}/>
+              <HoursCounter playlists={playlistToRender}/>
+              <Filter/>
+              {playlistToRender.map(playlist =>
+                <Playlist playlist={playlist} />
+              )}
+            </div>
+          : <button onClick={()=>window.location='http://localhost:8888/login'} style={{padding: '20px', fontSize: '50px', marginTop: '20px'}}>Sign in with Spotify</button>
         }
       </div> 
     )
   }
+
 }
 
 export default App
