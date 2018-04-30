@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 /* import './App.css'; */
+import queryString from 'query-string';
 
 let defaultStyle = {
   color: '#333333'
@@ -101,16 +102,24 @@ class App extends Component {
     this.state = {serverData: {}}
   }
   componentDidMount() {
+    
     setTimeout(() => {
       this.setState({serverData: fakeServerData})
     }, 250);
+    
+    let parsed = queryString.parse(window.location.search)
+    let accessToken = parsed.access_token
+    fetch('https://api.spotify.com/v1/me', {
+      headers: {'Authorization': 'Bearer '+accessToken}
+    }).then(response => response.json()
+    ).then(data => console.log(data))
   }
   render() {
     return (
       <div className="App">
         {this.state.serverData.user ?
           <div>
-            <h1 style={{...defaultStyle, 'font-size': '54px'}}>
+            <h1 style={{...defaultStyle, fontSize: '54px'}}>
               {this.state.serverData.user.name}'s Playlist
             </h1>
             <PlaylistCounter playlists={this.state.serverData.user.playlists}/>
@@ -119,7 +128,7 @@ class App extends Component {
             {this.state.serverData.user.playlists.map(playlist =>
               <Playlist playlist={playlist} />
             )}
-          </div> : ' Loading...'
+          </div> : <button onClick={()=>window.location='http://localhost:8888/login'} style={{padding: '20px', fontSize: '50px', marginTop: '20px'}}>Sign in with Spotify</button>
         }
       </div> 
     )
