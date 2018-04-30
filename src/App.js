@@ -36,11 +36,12 @@ class HoursCounter extends Component {
 class Filter extends Component {
   render() {
     return (
-      <div style={{defaultStyle}}>
-        <input type="text"/>
-        Filter
+      <div style={defaultStyle}>
+        <img/>
+        <input type="text" onKeyUp={event => 
+          this.props.onTextChange(event.target.value)}/>
       </div>
-    )
+    );
   }
 }
 
@@ -76,6 +77,8 @@ class App extends Component {
 
     let parsed = queryString.parse(window.location.search)
     let accessToken = parsed.access_token
+    if (!accessToken)
+      return;
 
     // Fetch username : simple merge on the first level
     fetch('https://api.spotify.com/v1/me', {
@@ -108,7 +111,9 @@ class App extends Component {
     let playlistToRender =
       this.state.user &&
       this.state.playlists
-        ? this.state.playlists
+        ?  this.state.playlists.filter(playlist => 
+          playlist.name.toLowerCase().includes(
+            this.state.filterString ? this.state.filterString.toLowerCase() : ''))
         : []
 
     return (
@@ -120,7 +125,9 @@ class App extends Component {
               </h1>
               <PlaylistCounter playlists={playlistToRender}/>
               <HoursCounter playlists={playlistToRender}/>
-              <Filter/>
+              <Filter onTextChange={text => {
+              this.setState({filterString: text})
+            }}/>
               {playlistToRender.map(playlist =>
                 <Playlist playlist={playlist} />
               )}
