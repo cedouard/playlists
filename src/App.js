@@ -53,7 +53,7 @@ class Playlist extends Component {
   render() {
     return (
       <div style={{...defaultStyle, display: 'inline-block', width: "25%"}}>
-        <img />
+        <img src={this.props.playlist.imageUrl} style={{width: '300px', height: '300px'}}/>
         <h3>{this.props.playlist.name}</h3>
         <ul>
           {this.props.playlist.songs.map(song =>
@@ -94,6 +94,7 @@ class App extends Component {
     ).then(data => this.setState({
       playlists: data.items.map(item => ({
         name: item.name,
+        imageUrl: item.images[0].url,
         songs: []
       }))
     }))
